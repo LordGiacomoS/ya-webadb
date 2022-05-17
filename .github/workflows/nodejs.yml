@@ -65,3 +65,15 @@ jobs:
           BRANCH: gh-pages
           FOLDER: apps/demo/out
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  log-the-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Log level: $LEVEL"
+          echo "Tags: $TAGS"
+          echo "Environment: $ENVIRONMENT"
+        env:
+          LEVEL: ${{ github.event.inputs.logLevel }}
+          TAGS: ${{ github.event.inputs.tags }}
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
