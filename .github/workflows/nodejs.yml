@@ -4,7 +4,11 @@
 name: Node.js CI
 
 on: 
-  workflow_dispatch: inputs
+  workflow_dispatch: 
+    inputs:
+      ignorable:
+        description: 'Ignore this'
+        type: boolean
   push:
     branches: [master]
   pull_request:
