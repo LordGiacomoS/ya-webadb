@@ -15,7 +15,7 @@
      * path segment in the "$schema" field for all your Rush config files.  This will ensure
      * correct error-underlining and tab-completion for editors such as VS Code.
      */
-    "rushVersion": "5.62.4",
+    "rushVersion": "5.68.1",
     /**
      * The next field selects which package manager should be installed and determines its version.
      * Rush installs its own local copy of the package manager to ensure that your build process
@@ -87,7 +87,7 @@
          *
          * The default value is false.
          */
-        // "preventManualShrinkwrapChanges": true,
+        "preventManualShrinkwrapChanges": true
         /**
          * If true, then `rush install` will use the PNPM workspaces feature to perform the
          * install.
@@ -115,7 +115,7 @@
      * LTS schedule: https://nodejs.org/en/about/releases/
      * LTS versions: https://nodejs.org/en/download/releases/
      */
-    "nodeSupportedVersionRange": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.13.0 <17.0.0",
+    "nodeSupportedVersionRange": ">=14.15.0 <15.0.0 || >=16.13.0 <17.0.0",
     /**
      * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
      * spend six months in a stabilization period before the first Long Term Support (LTS) version.
@@ -271,12 +271,12 @@
          * your PR branch, and in this situation "rush change" will also automatically invoke "git fetch"
          * to retrieve the latest activity for the remote master branch.
          */
-        "url": "https://github.com/yume-chan/ya-webadb"
+        "url": "https://github.com/yume-chan/ya-webadb",
         /**
          * The default branch name. This tells "rush change" which remote branch to compare against.
          * The default value is "master"
          */
-        // "defaultBranch": "master",
+        "defaultBranch": "master"
         /**
          * The default remote. This tells "rush change" which remote to compare against if the remote URL is
          * not set or if a remote matching the provided remote URL is not found.

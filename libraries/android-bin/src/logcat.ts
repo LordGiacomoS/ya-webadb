@@ -1,6 +1,6 @@
 // cspell: ignore logcat
 
-import { AdbCommandBase, BufferedStream, BufferedStreamEndedError, DecodeUtf8Stream, ReadableStream, SplitLineStream, WritableStream } from "@yume-chan/adb";
+import { AdbCommandBase, AdbSubprocessNoneProtocol, BufferedStream, BufferedStreamEndedError, DecodeUtf8Stream, ReadableStream, SplitLineStream, WritableStream } from "@yume-chan/adb";
 import Struct, { StructAsyncDeserializeStream } from "@yume-chan/struct";
 
 // `adb logcat` is an alias to `adb shell logcat`
@@ -63,10 +63,14 @@ export interface LogMessage extends LoggerEntry {
 
 export async function deserializeLogMessage(stream: StructAsyncDeserializeStream): Promise<LogMessage> {
     const entry = await LoggerEntry.deserialize(stream);
-    await stream.read(entry.headerSize - LoggerEntry.size);
+    if (entry.headerSize !== LoggerEntry.size) {
+        await stream.read(entry.headerSize - LoggerEntry.size);
+    }
     const priority = (await stream.read(1))[0] as LogPriority;
     const payload = await stream.read(entry.payloadSize - 1);
-    return { ...entry, priority, payload };
+    (entry as any).priority = priority;
+    (entry as any).payload = payload;
+    return entry as LogMessage;
 }
 
 export interface LogSize {
@@ -163,7 +167,10 @@ export class Logcat extends AdbCommandBase {
                     '-B',
                     ...(options?.pid ? ['--pid', options.pid.toString()] : []),
                     ...(options?.ids ? ['-b', Logcat.joinLogId(options.ids)] : [])
-                ]);
+                ], {
+                    // PERF: None protocol is 25% faster then Shell protocol
+                    protocols: [AdbSubprocessNoneProtocol],
+                });
                 bufferedStream = new BufferedStream(stdout);
             },
             async pull(controller) {

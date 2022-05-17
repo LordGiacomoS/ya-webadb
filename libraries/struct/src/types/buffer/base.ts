@@ -1,7 +1,5 @@
-// cspell: ignore syncbird
-
 import { StructFieldDefinition, StructFieldValue, StructValue, type StructAsyncDeserializeStream, type StructDeserializeStream, type StructOptions } from '../../basic/index.js';
-import { Syncbird } from "../../syncbird.js";
+import { SyncPromise } from "../../sync-promise.js";
 import { decodeUtf8, encodeUtf8, type ValueOrPromise } from "../../utils.js";
 
 /**
@@ -38,7 +36,8 @@ export abstract class BufferFieldSubType<TValue = unknown, TTypeScriptType = TVa
 }
 
 /** An `BufferFieldSubType` that's actually an `Uint8Array` */
-export class Uint8ArrayBufferFieldSubType extends BufferFieldSubType<Uint8Array> {
+export class Uint8ArrayBufferFieldSubType<TTypeScriptType = Uint8Array>
+    extends BufferFieldSubType<Uint8Array, TTypeScriptType> {
     public static readonly Instance = new Uint8ArrayBufferFieldSubType();
 
     protected constructor() {
@@ -79,15 +78,16 @@ export class StringBufferFieldSubType<TTypeScriptType = string>
     }
 }
 
-const EmptyBuffer = new Uint8Array(0);
+export const EMPTY_UINT8_ARRAY = new Uint8Array(0);
 
 export abstract class BufferLikeFieldDefinition<
     TType extends BufferFieldSubType<any, any> = BufferFieldSubType<unknown, unknown>,
     TOptions = void,
     TOmitInitKey extends PropertyKey = never,
+    TTypeScriptType = TType["TTypeScriptType"],
     > extends StructFieldDefinition<
     TOptions,
-    TType['TTypeScriptType'],
+    TTypeScriptType,
     TOmitInitKey
     >{
     public readonly type: TType;
@@ -128,17 +128,20 @@ export abstract class BufferLikeFieldDefinition<
         stream: StructDeserializeStream | StructAsyncDeserializeStream,
         struct: StructValue,
     ): ValueOrPromise<BufferLikeFieldValue<this>> {
-        return Syncbird.try(() => {
-            const size = this.getDeserializeSize(struct);
-            if (size === 0) {
-                return EmptyBuffer;
-            } else {
-                return stream.read(size);
-            }
-        }).then(array => {
-            const value = this.type.toValue(array);
-            return this.create(options, struct, value, array);
-        }).valueOrPromise();
+        return SyncPromise
+            .try(() => {
+                const size = this.getDeserializeSize(struct);
+                if (size === 0) {
+                    return EMPTY_UINT8_ARRAY;
+                } else {
+                    return stream.read(size);
+                }
+            })
+            .then(array => {
+                const value = this.type.toValue(array);
+                return this.create(options, struct, value, array);
+            })
+            .valueOrPromise();
     }
 }
 
